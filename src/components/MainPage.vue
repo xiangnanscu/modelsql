@@ -1,11 +1,11 @@
 <script setup>
 import { ref } from 'vue'
-import Sql from '../sql.mjs'
+import Sql from '../modelsql.mjs'
 
 defineProps({
   msg: String
 })
-const sqlFallback = {
+const modelsqlFallback = {
   statement() {
     return ''
   }
@@ -13,9 +13,9 @@ const sqlFallback = {
 const inputValue = ref('')
 const jseval = (s) => {
   try {
-    return eval(s) || sqlFallback
+    return eval(s) || modelsqlFallback
   } catch (error) {
-    return sqlFallback
+    return modelsqlFallback
   }
 }
 

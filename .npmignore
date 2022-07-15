@@ -9,5 +9,5 @@ index.html
 vite.config.js
 yarn.lock
 src/*
-!src/sql.mjs
-!src/sql.test.mjs
+!src/modelsql.mjs
+!src/modelsql.test.mjs

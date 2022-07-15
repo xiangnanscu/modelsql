@@ -1,8 +1,8 @@
 {
-  "name": "@xiangnanscu/sql",
-  "version": "0.1.0",
-  "description": "sql",
-  "main": "src/sql.mjs",
+  "name": "@xiangnanscu/modelsql",
+  "version": "0.2.0",
+  "description": "modelsql",
+  "main": "src/modelsql.mjs",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,28 +11,31 @@
     "release": "push_option=release npm run push",
     "push": "git add . && git commit -am \"${msg:-push}\" && git push --push-option=${push_option:-nothing}",
     "rr": "npm run replace && npm run rename",
-    "replace": "find .  -type d \\( -name .git -o -name node_modules \\) -prune -o  -type f  -exec  sed -i s/sql/sql/g {} \\;",
-    "rename": "rename -n s/sql/sql/g src/*",
+    "replace": "find .  -type d \\( -name .git -o -name node_modules \\) -prune -o  -type f  -exec  sed -i s/modelsql/modelmodelsql/g {} \\;",
+    "rename": "rename s/modelsql/modelmodelsql/g src/*",
     "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xiangnanscu/sql.git"
+    "url": "git+https://github.com/xiangnanscu/modelsql.git"
   },
   "author": "Nan Xiang",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/xiangnanscu/sql/issues"
+    "url": "https://github.com/xiangnanscu/modelsql/issues"
   },
   "jest": {
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.m?[jt]sx?$",
     "transform": {}
   },
-  "homepage": "https://github.com/xiangnanscu/sql#readme",
+  "homepage": "https://github.com/xiangnanscu/modelsql#readme",
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.3",
     "jest": "^28.1.2",
     "vite": "^2.9.9",
     "vue": "^3.2.25"
+  },
+  "dependencies": {
+    "@xiangnanscu/sql": "^0.1.0"
   }
 }
