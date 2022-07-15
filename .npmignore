@@ -1,0 +1,13 @@
+public
+logs
+node_modules
+tmp
+.vscode
+.github
+.npmrc
+index.html
+vite.config.js
+yarn.lock
+src/*
+!src/sql.mjs
+!src/sql.test.mjs

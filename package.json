@@ -1,0 +1,38 @@
+{
+  "name": "@xiangnanscu/sql",
+  "version": "0.1.0",
+  "description": "sql",
+  "main": "src/sql.mjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prerelease": "npm --no-git-tag-version version minor",
+    "release": "push_option=release npm run push",
+    "push": "git add . && git commit -am \"${msg:-push}\" && git push --push-option=${push_option:-nothing}",
+    "rr": "npm run replace && npm run rename",
+    "replace": "find .  -type d \\( -name .git -o -name node_modules \\) -prune -o  -type f  -exec  sed -i s/sql/sql/g {} \\;",
+    "rename": "rename -n s/sql/sql/g src/*",
+    "test": "yarn node --experimental-vm-modules $(yarn bin jest)"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xiangnanscu/sql.git"
+  },
+  "author": "Nan Xiang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/xiangnanscu/sql/issues"
+  },
+  "jest": {
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.m?[jt]sx?$",
+    "transform": {}
+  },
+  "homepage": "https://github.com/xiangnanscu/sql#readme",
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^2.3.3",
+    "jest": "^28.1.2",
+    "vite": "^2.9.9",
+    "vue": "^3.2.25"
+  }
+}
