@@ -13,11 +13,14 @@ const User = {
     name: {name: 'name'}
   }
 }
-class UserSql extends Sql {
+class UserSql2 extends Sql {
   model = User
   tableName = User.tableName
 }
-
+const UserSql = Sql.makeClass({
+  model : User,
+  tableName : User.tableName
+})
 
 // console.log(UserSql.new().validate(false).insert({ "id": 1, "name": "foo" }).statement())
 

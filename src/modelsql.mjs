@@ -77,6 +77,13 @@ class ModelSql extends Sql {
   static new() {
     return new this()
   }
+  static makeClass({model, tableName}) {
+    class ConcreteModelSql extends this {
+      model = model
+      tableName = tableName
+    }
+    return ConcreteModelSql
+  }
   toString() {
     return this.statement()
   }
