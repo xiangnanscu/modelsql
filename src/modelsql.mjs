@@ -15,6 +15,13 @@ let COMPAREOPERATORS = {
   ne: "<>",
   eq: "=",
 };
+function assert(bool, errMsg) {
+  if (!bool) {
+    throw new Error(errMsg)
+  } else {
+    return bool
+  }
+}
 function getForeignObject(attrs, prefix) {
   let fk = {};
   let n = prefix.length;
@@ -64,20 +71,20 @@ function bulkDispatcher(name, self, rows, key, columns) {
     return bulkSql;
   }
 }
-function join(self, joinArgs, ...varargs) {
+function join(joinArgs, ...varargs) {
   if (typeof joinArgs === "object") {
-    self._registerJoinModel(joinArgs, "INNER");
+    this._registerJoinModel(joinArgs, "INNER");
   } else {
-    Sql.prototype.join.call(self, joinArgs, ...varargs);
+    Sql.prototype.join.call(this, joinArgs, ...varargs);
   }
-  return self;
+  return this;
 }
 
 class ModelSql extends Sql {
   static new() {
     return new this()
   }
-  static makeClass({model, tableName}) {
+  static makeClass({ model, tableName }) {
     class ConcreteModelSql extends this {
       model = model
       tableName = tableName
@@ -91,7 +98,7 @@ class ModelSql extends Sql {
     let tokens = [];
     for (let [k, value] of Object.entries(kwargs)) {
       if (typeof k === "string") {
-        tokens.push(this._getExprToken(value, this._getWhereKey(k)));
+        tokens.push(this._getExprToken(value, ...this._getWhereKey(k)));
       } else {
         let token = this._getConditionToken(value);
         if (token !== undefined && token !== "") {
@@ -238,7 +245,7 @@ class ModelSql extends Sql {
       this._handleJoin(joinType.toLowerCase(), joinTable, joinCond);
       this._joinKeys[joinKey] = joinObj;
     }
-    return [joinObj, find];
+    return joinObj  //[joinObj, find];
   }
   _findFieldModel(col) {
     let field = this.model.fields[col];
@@ -287,7 +294,7 @@ class ModelSql extends Sql {
       if (a === -1) {
         e = key.slice(i);
       } else {
-        e = key.sub(i, a);
+        e = key.slice(i, a);
       }
       if (state === NONFOREIGNKEY) {
         operator = e;
@@ -389,29 +396,21 @@ class ModelSql extends Sql {
   }
   insert(rows, columns) {
     if (!this.isInstance(rows)) {
-      try {
-        let validate = this._validate === undefined || this._validate;
-        if (validate) {
-          [rows, columns] = this.model.validateCreateData(rows, columns);
-        }
-        [rows, columns] = this.model.prepareDbRows(rows, columns);
-      } catch (error) {
-        return this.error(error);
+      let validate = this._validate === undefined || this._validate;
+      if (validate) {
+        [rows, columns] = this.model.validateCreateData(rows, columns);
       }
+      [rows, columns] = this.model.prepareDbRows(rows, columns);
     }
     return Sql.prototype.insert.call(this, rows, columns);
   }
   update(row, columns) {
     if (!this.isInstance(row)) {
-      try {
-        let validate = this._validate === undefined || this._validate;
-        if (validate) {
-          [row, columns] = this.model.validateUpdate(row, columns);
-        }
-        [row, columns] = this.model.prepareDbRows(row, columns, true);
-      } catch (error) {
-        return this.error(error);
+      let validate = this._validate === undefined || this._validate;
+      if (validate) {
+        [row, columns] = this.model.validateUpdate(row, columns);
       }
+      [row, columns] = this.model.prepareDbRows(row, columns, true);
     }
     return Sql.prototype.update.call(this, row, columns);
   }
@@ -562,12 +561,8 @@ class ModelSql extends Sql {
     return this._handleWhereToken(whereToken, "(%s) AND (%s)").exec();
   }
   exists() {
-    try {
-      let statement = `SELECT EXISTS (${this.select("").limit(1).statement()})`;
-      return this.model.query(statement);
-    } catch (error) {
-      return this.error(error);
-    }
+    let statement = `SELECT EXISTS (${this.select("").limit(1).statement()})`;
+    return this.model.query(statement);
   }
   commit(bool) {
     this._commit = bool;
@@ -625,47 +620,43 @@ class ModelSql extends Sql {
     return this.raw().exec();
   }
   exec() {
-    try {
-      let statement = this.statement();
-      let records = this.model.query(statement, this._compact);
-      if (this._raw || this._compact) {
-        return records;
-      } else if (this._select || (!this._update && !this._insert && !this._delete)) {
-        if (!this._loadFk) {
-          for (let [i, record] of records.entries()) {
-            records[i] = this.model.load(record);
-          }
-        } else {
-          let fields = this.model.fields;
-          let fieldNames = this.model.fieldNames;
-          for (let [i, record] of records.entries()) {
-            for (let name of fieldNames) {
-              let field = fields[name];
-              let value = record[name];
-              if (value !== undefined) {
-                let fkModel = this._loadFk[name];
-                if (!fkModel) {
-                  if (!field.load) {
-                    record[name] = value;
-                  } else {
-                    record[name] = field.load(value);
-                  }
+    let statement = this.statement();
+    let records = this.model.query(statement, this._compact);
+    if (this._raw || this._compact) {
+      return records;
+    } else if (this._select || (!this._update && !this._insert && !this._delete)) {
+      if (!this._loadFk) {
+        for (let [i, record] of records.entries()) {
+          records[i] = this.model.load(record);
+        }
+      } else {
+        let fields = this.model.fields;
+        let fieldNames = this.model.fieldNames;
+        for (let [i, record] of records.entries()) {
+          for (let name of fieldNames) {
+            let field = fields[name];
+            let value = record[name];
+            if (value !== undefined) {
+              let fkModel = this._loadFk[name];
+              if (!fkModel) {
+                if (!field.load) {
+                  record[name] = value;
                 } else {
-                  record[name] = fkModel.load(
-                    getForeignObject(record, name + "__")
-                  );
+                  record[name] = field.load(value);
                 }
+              } else {
+                record[name] = fkModel.load(
+                  getForeignObject(record, name + "__")
+                );
               }
             }
-            records[i] = this.model.new(record);
           }
+          records[i] = this.model.new(record);
         }
-        return records;
-      } else {
-        return records;
       }
-    } catch (error) {
-      return this.error(error)
+      return records;
+    } else {
+      return records;
     }
   }
   compact() {
