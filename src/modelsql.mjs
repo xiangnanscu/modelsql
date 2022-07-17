@@ -38,7 +38,7 @@ let bulkMethods = {
   merge: { validateMethod: "validateCreateRows", sqlMethod: Sql.prototype.merge },
   updates: { validateMethod: "validateUpdateRows", sqlMethod: Sql.prototype.updates },
 };
-function bulkDispatcher(name, self, rows, key, columns) {
+async function bulkDispatcher(name, self, rows, key, columns) {
   if (!self.isInstance(rows)) {
     let validate = self._validate === undefined || self._validate;
     if (validate) {
@@ -63,9 +63,9 @@ function bulkDispatcher(name, self, rows, key, columns) {
   let bulkSql = bulkMethods[name].sqlMethod.call(self, rows, key, columns);
   if (self._commit === undefined || self._commit) {
     if (!self._returning) {
-      return bulkSql.returning(key).compact().execr();
+      return await bulkSql.returning(key).compact().execr();
     } else {
-      return bulkSql.compact().execr();
+      return await bulkSql.compact().execr();
     }
   } else {
     return bulkSql;
@@ -414,14 +414,14 @@ class ModelSql extends Sql {
     }
     return Sql.prototype.update.call(this, row, columns);
   }
-  gets(keys) {
+  async gets(keys) {
     if (this._commit === undefined || this._commit) {
-      return Sql.prototype.gets.call(this, keys).execr();
+      return await Sql.prototype.gets.call(this, keys).execr();
     } else {
       return Sql.prototype.gets.call(this, keys);
     }
   }
-  mergeGets(rows, keys) {
+  async mergeGets(rows, keys) {
     let columns = this._getKeys(rows[0]);
     [rows, columns] = this._getCteValuesLiteral(rows, columns, true);
     let joinCond = this._getJoinConditions(
@@ -436,7 +436,7 @@ class ModelSql extends Sql {
       .with(cteName, cteValues)
       .rightJoin("V", joinCond);
     if (this._commit === undefined || this._commit) {
-      return res.execr();
+      return await res.execr();
     } else {
       return res;
     }
@@ -547,22 +547,22 @@ class ModelSql extends Sql {
       high
     );
   }
-  upsert(rows, key, columns) {
-    return bulkDispatcher("upsert", this, rows, key, columns);
+  async upsert(rows, key, columns) {
+    return await bulkDispatcher("upsert", this, rows, key, columns);
   }
-  merge(rows, key, columns) {
-    return bulkDispatcher("merge", this, rows, key, columns);
+  async merge(rows, key, columns) {
+    return await bulkDispatcher("merge", this, rows, key, columns);
   }
-  updates(rows, key, columns) {
-    return bulkDispatcher("updates", this, rows, key, columns);
+  async updates(rows, key, columns) {
+    return await bulkDispatcher("updates", this, rows, key, columns);
   }
-  filter(kwargs) {
+  async filter(kwargs) {
     let whereToken = this._getConditionTokenFromTable(kwargs);
-    return this._handleWhereToken(whereToken, "(%s) AND (%s)").exec();
+    return await this._handleWhereToken(whereToken, "(%s) AND (%s)").exec();
   }
-  exists() {
+  async exists() {
     let statement = `SELECT EXISTS (${this.select("").limit(1).statement()})`;
-    return this.model.query(statement);
+    return await this.model.query(statement);
   }
   commit(bool) {
     this._commit = bool;
@@ -572,17 +572,15 @@ class ModelSql extends Sql {
     this._validate = bool;
     return this;
   }
-  flat(depth) {
-    return this.compact().execr().flat(depth);
+  async flat(depth) {
+    return await this.compact().execr().flat(depth);
   }
-  get(...varargs) {
+  async get(...varargs) {
     let records;
     if (varargs.length > 0) {
-      records = this.where(...varargs)
-        .limit(2)
-        .exec();
+      records = await this.where(...varargs).limit(2).exec();
     } else {
-      records = this.limit(2).exec();
+      records = await this.limit(2).exec();
     }
     if (records.length === 1) {
       return records[0];
@@ -590,8 +588,8 @@ class ModelSql extends Sql {
       return this.error("not 1 record returned:" + records.length);
     }
   }
-  getOrCreate(params, ...varargs) {
-    let records = this.select(...varargs)
+  async getOrCreate(params, ...varargs) {
+    let records = await this.select(...varargs)
       .where(params)
       .limit(2)
       .exec();
@@ -599,29 +597,29 @@ class ModelSql extends Sql {
       return records[0];
     } else if (records.length === 0) {
       let pk = this.model.primaryKey;
-      let res = this.model.Sql.new().insert(params).returning(pk).execr();
+      let res = await this.model.Sql.new().insert(params).returning(pk).execr();
       params[pk] = res[0][pk];
       return this.model.new(params);
     } else {
       return this.error("getOrCreate: not 1 record returned");
     }
   }
-  asSet() {
-    return this.compact().execr().flat().asSet();
+  async asSet() {
+    return await this.compact().execr().flat().asSet();
   }
-  count(...varargs) {
-    let res = this.select("count(*)")
+  async count(...varargs) {
+    let res = await this.select("count(*)")
       .where(...varargs)
       .compact()
       .exec();
     return res[0][0];
   }
-  execr() {
-    return this.raw().exec();
+  async execr() {
+    return await this.raw().exec();
   }
-  exec() {
+  async exec() {
     let statement = this.statement();
-    let records = this.model.query(statement, this._compact);
+    let records = await this.model.query(statement, this._compact);
     if (this._raw || this._compact) {
       return records;
     } else if (this._select || (!this._update && !this._insert && !this._delete)) {
