@@ -179,7 +179,7 @@ class ModelSql extends Sql {
     rows = this._rowsToArray(rows, columns);
     let firstRow = rows[0];
     for (let [i, col] of columns.entries()) {
-      let field = this._findFieldModel(col);
+      let [field] = this._findFieldModel(col);
       if (field) {
         firstRow[i] = `${asLiteral(firstRow[i])}::${field.dbType}`;
       } else if (noCheck) {
