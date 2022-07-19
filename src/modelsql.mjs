@@ -400,7 +400,7 @@ class ModelSql extends Sql {
     if (!this.isInstance(row)) {
       let validate = this._validate === undefined || this._validate;
       if (validate) {
-        [row, columns] = this.model.validateUpdate(row, columns);
+        row = this.model.validateUpdate(row, columns);
       }
       [row, columns] = this.model.prepareDbRows(row, columns, true);
     }
