@@ -192,7 +192,7 @@ class ModelSql extends Sql {
     }
     rows[0] = "(" + asToken(firstRow) + ")";
     let rl = rows.length
-    for (let i = 1; i <= rl; i = i + 1) {
+    for (let i = 1; i < rl; i = i + 1) {
       rows[i] = asLiteral(rows[i]);
     }
     return [rows, columns];
