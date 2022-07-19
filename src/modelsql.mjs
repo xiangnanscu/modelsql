@@ -71,14 +71,6 @@ async function bulkDispatcher(name, self, rows, key, columns) {
     return bulkSql;
   }
 }
-function join(joinArgs, ...varargs) {
-  if (typeof joinArgs === "object") {
-    this._registerJoinModel(joinArgs, "INNER");
-  } else {
-    Sql.prototype.join.call(this, joinArgs, ...varargs);
-  }
-  return this;
-}
 
 class ModelSql extends Sql {
   static new() {
@@ -441,8 +433,22 @@ class ModelSql extends Sql {
       return res;
     }
   }
-  join = join;
-  innerJoin = join;
+  join(joinArgs, ...varargs) {
+    if (typeof joinArgs === "object") {
+      this._registerJoinModel(joinArgs, "INNER");
+    } else {
+      Sql.prototype.join.call(this, joinArgs, ...varargs);
+    }
+    return this;
+  }
+  innerJoin(joinArgs, ...varargs) {
+    if (typeof joinArgs === "object") {
+      this._registerJoinModel(joinArgs, "INNER");
+    } else {
+      Sql.prototype.join.call(this, joinArgs, ...varargs);
+    }
+    return this;
+  }
   leftJoin(joinArgs, ...varargs) {
     if (typeof joinArgs === "object") {
       this._registerJoinModel(joinArgs, "LEFT");
