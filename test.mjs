@@ -1,4 +1,4 @@
-import Sql from './modelsql.mjs'
+import Sql from './src/modelsql.mjs'
 
 
 const User = {

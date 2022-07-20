@@ -1,6 +1,6 @@
 {
   "name": "@xiangnanscu/modelsql",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "modelsql",
   "main": "src/modelsql.mjs",
   "scripts": {
