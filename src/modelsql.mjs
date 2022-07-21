@@ -388,8 +388,7 @@ class ModelSql extends Sql {
   }
   insert(rows, columns) {
     if (!this.isInstance(rows)) {
-      let skipValidate = self._skipValidate === undefined ? false : !!self._skipValidate;
-      if (!skipValidate) {
+      if (!this._skipValidate) {
         [rows, columns] = this.model.validateCreateData(rows, columns);
       }
       [rows, columns] = this.model.prepareDbRows(rows, columns);
@@ -398,8 +397,7 @@ class ModelSql extends Sql {
   }
   update(row, columns) {
     if (!this.isInstance(row)) {
-      let skipValidate = self._skipValidate === undefined ? false : !!self._skipValidate;
-      if (!skipValidate) {
+      if (!this._skipValidate) {
         row = this.model.validateUpdate(row, columns);
       }
       [row, columns] = this.model.prepareDbRows(row, columns, true);
