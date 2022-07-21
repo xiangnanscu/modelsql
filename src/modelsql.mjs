@@ -40,8 +40,8 @@ let bulkMethods = {
 };
 async function bulkDispatcher(name, self, rows, key, columns) {
   if (!self.isInstance(rows)) {
-    let validate = self._validate === undefined || self._validate;
-    if (validate) {
+    let skipValidate = self._skipValidate === undefined ? false : !!self._skipValidate;
+    if (!skipValidate) {
       [rows, key, columns] = self.model[bulkMethods[name].validateMethod](
         rows,
         key,
@@ -388,8 +388,8 @@ class ModelSql extends Sql {
   }
   insert(rows, columns) {
     if (!this.isInstance(rows)) {
-      let validate = this._validate === undefined || this._validate;
-      if (validate) {
+      let skipValidate = self._skipValidate === undefined ? false : !!self._skipValidate;
+      if (!skipValidate) {
         [rows, columns] = this.model.validateCreateData(rows, columns);
       }
       [rows, columns] = this.model.prepareDbRows(rows, columns);
@@ -398,8 +398,8 @@ class ModelSql extends Sql {
   }
   update(row, columns) {
     if (!this.isInstance(row)) {
-      let validate = this._validate === undefined || this._validate;
-      if (validate) {
+      let skipValidate = self._skipValidate === undefined ? false : !!self._skipValidate;
+      if (!skipValidate) {
         row = this.model.validateUpdate(row, columns);
       }
       [row, columns] = this.model.prepareDbRows(row, columns, true);
@@ -574,8 +574,8 @@ class ModelSql extends Sql {
     this._commit = bool;
     return this;
   }
-  validate(bool) {
-    this._validate = bool;
+  skipValidate(bool) {
+    this._skipValidate = bool;
     return this;
   }
   async flat(depth) {
