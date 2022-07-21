@@ -575,7 +575,7 @@ class ModelSql extends Sql {
     return this;
   }
   skipValidate(bool) {
-    this._skipValidate = bool;
+    this._skipValidate = bool === undefined ? true : !!bool;
     return this;
   }
   async flat(depth) {
