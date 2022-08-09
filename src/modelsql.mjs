@@ -626,7 +626,7 @@ class ModelSql extends Sql {
     let records = await this.model.query(statement, this._compact);
     if (this._raw || this._compact) {
       return records;
-    } else if (this._select || (!this._update && !this._insert && !this._delete)) {
+    } else if ((this._select || (!this._update && !this._insert && !this._delete)) && Array.isArray(records)) {
       if (!this._loadFk) {
         for (let [i, record] of records.entries()) {
           records[i] = this.model.load(record);
