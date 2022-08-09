@@ -1,4 +1,4 @@
-import Sql from "@xiangnanscu/sql"
+import { Sql } from "@xiangnanscu/sql"
 let NULL = Sql.NULL;
 let asLiteral = Sql.asLiteral;
 let asToken = Sql.asToken;
